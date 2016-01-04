@@ -1,3 +1,4 @@
+from collections import OrderedDict
 
 
 class tag(object):
@@ -48,7 +49,7 @@ class tag(object):
         attrs = {k: v for k, v in self.attrs.items()}
         if attrs:
             attrs = ' ' + ' '.join(
-                ('%s="%s"' % (k.lstrip('_'), v) for k, v in attrs.items())
+                ('%s="%s"' % (k.rstrip('_'), v) for k, v in attrs.items())
             )
         else:
             attrs = ''
@@ -68,3 +69,23 @@ class text(str):
 
     def _stream(self):
         yield self
+
+
+class style(object):
+
+    def __init__(self, *args):
+        self.styles = OrderedDict()
+        self(*args)
+
+    def _stream(self):
+        yield '\n<style>\n'
+        for selector, style in self.styles.items():
+            yield '{} {{\n'.format(selector)
+            for k, v in style.items():
+                yield '    {}: {};\n'.format(k, v)
+            yield '}\n'
+        yield '\n</style>\n'
+
+    def __call__(self, *args):
+        for selector, style in args:
+            self.styles[selector] = style
