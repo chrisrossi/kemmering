@@ -7,7 +7,7 @@ requires = [
 ]
 tests_require = requires + []
 
-setup(name='kemmer',
+setup(name='kemmering',
       version=VERSION,
       description='Super simple XML tags',
       packages=find_packages(),
