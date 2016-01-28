@@ -21,25 +21,19 @@ class tag(object):
         self.children += tuple(mkchild(x) for x in children)
         return self
 
-    def __iter__(self):
-        return iter(self.children)
-
-    def render(self):
-        return self.__str__()
-
     def __str__(self):
         return ''.join(self._stream())
 
     def __repr__(self):
-        if self.self_closing and not self.children:
-            return 'tag(%s)' % repr(self.tag + '/')
-
         if self.attrs:
             attrs = ', ' + ', '.join(
                 ('%s=%s' % (k, repr(v)) for k, v in self.attrs.items())
             )
         else:
             attrs = ''
+
+        if self.self_closing and not self.children:
+            return 'tag({}{})'.format(repr(self.tag + '/'), attrs)
 
         children = ('(%s)' % ', '.join(map(repr, self.children))
                     if self.children else '')
@@ -80,12 +74,16 @@ class style(object):
     def _stream(self):
         yield '\n<style>\n'
         for selector, style in self.styles.items():
-            yield '{} {{\n'.format(selector)
+            yield '  {} {{\n'.format(selector)
             for k, v in style.items():
                 yield '    {}: {};\n'.format(k, v)
-            yield '}\n'
-        yield '\n</style>\n'
+            yield '  }\n'
+        yield '</style>\n'
 
     def __call__(self, *args):
         for selector, style in args:
             self.styles[selector] = style
+
+    def __str__(self):
+        return ''.join(self._stream())
+
