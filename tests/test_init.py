@@ -35,6 +35,14 @@ def test_tag_with_attributes_repr():
     assert (result == "tag('a/', foo='bar', bar='baz')" or
             result == "tag('a/', bar='baz', foo='bar')")
 
+def test_tag_with_reserved_word_attributes():
+    from kemmering import tag
+    assert str(tag('a/', class_='foo')) == '<a class="foo"/>'
+
+def test_tag_with_reserved_word_attributes_repr():
+    from kemmering import tag
+    assert repr(tag('a/', class_='foo')) == "tag('a/', class_='foo')"
+
 def test_style():
     from kemmering import style
     assert str(style(
