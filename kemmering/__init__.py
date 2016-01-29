@@ -86,4 +86,3 @@ class style(object):
 
     def __str__(self):
         return ''.join(self._stream())
-
