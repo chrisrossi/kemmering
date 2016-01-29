@@ -25,12 +25,15 @@ def test_nested_tags_repr():
 
 def test_tag_with_attributes():
     from kemmering import tag
-    assert str(tag('a/', foo='bar', bar='baz')) == '<a foo="bar" bar="baz"/>'
+    result = str(tag('a/', foo='bar', bar='baz'))
+    assert (result == '<a foo="bar" bar="baz"/>' or
+            result == '<a bar="baz" foo="bar"/>')
 
 def test_tag_with_attributes_repr():
     from kemmering import tag
-    assert (repr(tag('a/', foo='bar', bar='baz')) ==
-            "tag('a/', foo='bar', bar='baz')")
+    result = repr(tag('a/', foo='bar', bar='baz'))
+    assert (result == "tag('a/', foo='bar', bar='baz')" or
+            result == "tag('a/', bar='baz', foo='bar')")
 
 def test_style():
     from kemmering import style
