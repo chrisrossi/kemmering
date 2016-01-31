@@ -107,3 +107,27 @@ class defer(object):
         return '{}({})'.format(
             type(self).__name__,
             getattr(self.f, '__name__', repr(self.f)))
+
+
+class from_context(defer):
+
+    def __init__(self, key):
+        self.key = key
+
+    def _bind(self, context):
+        return context[self.key]
+
+    def __repr__(self):
+        return '{}({})'.format(type(self).__name__, repr(self.key))
+
+
+class format_context(defer):
+
+    def __init__(self, s):
+        self.s = s
+
+    def _bind(self, context):
+        return self.s.format(**context)
+
+    def __repr__(self):
+        return '{}({})'.format(type(self).__name__, repr(self.s))

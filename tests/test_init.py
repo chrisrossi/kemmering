@@ -87,3 +87,28 @@ def test_defer_with_notag():
                           '<p>Nice to meet you!</p>foo</doc>')
     assert repr(bound) == ("tag('doc')(notag(tag('p')('Hello Fred!'), "
                            "tag('p')('Nice to meet you!')), 'foo')")
+
+
+def test_from_context():
+    from kemmering import bind, from_context, tag
+
+    doc = tag('doc')(
+        tag('p')('Hello ', from_context('name'), '!'), 'foo')
+    assert repr(doc) == ("tag('doc')(tag('p')"
+                         "('Hello ', from_context('name'), '!'), 'foo')")
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'name': 'Fred'})
+    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+
+
+def test_format_context():
+    from kemmering import bind, format_context, tag
+
+    doc = tag('doc')(tag('p')(format_context('Hello {name}!')), 'foo')
+    assert repr(doc) == ("tag('doc')(tag('p')"
+                         "(format_context('Hello {name}!')), 'foo')")
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'name': 'Fred'})
+    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
