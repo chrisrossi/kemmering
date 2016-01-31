@@ -1,4 +1,6 @@
-from collections import OrderedDict
+"""
+Kemmering tag
+"""
 
 
 class tag(object):
@@ -63,26 +65,3 @@ class text(str):
 
     def _stream(self):
         yield self
-
-
-class style(object):
-
-    def __init__(self, *args):
-        self.styles = OrderedDict()
-        self(*args)
-
-    def _stream(self):
-        yield '\n<style>\n'
-        for selector, style in self.styles.items():
-            yield '  {} {{\n'.format(selector)
-            for k, v in style.items():
-                yield '    {}: {};\n'.format(k, v)
-            yield '  }\n'
-        yield '</style>\n'
-
-    def __call__(self, *args):
-        for selector, style in args:
-            self.styles[selector] = style
-
-    def __str__(self):
-        return ''.join(self._stream())
