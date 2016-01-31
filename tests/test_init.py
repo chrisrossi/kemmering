@@ -1,3 +1,5 @@
+import pytest
+
 
 def test_tag():
     from kemmering import tag
@@ -51,3 +53,37 @@ def test_tag_with_reserved_word_attributes():
 def test_tag_with_reserved_word_attributes_repr():
     from kemmering import tag
     assert repr(tag('a/', class_='foo')) == "tag('a/', class_='foo')"
+
+
+def test_defer():
+    from kemmering import bind, defer, tag
+
+    @defer
+    def deferred(context):
+        return tag('p')('Hello {}!'.format(context['name']))
+    doc = tag('doc')(deferred, 'foo')
+    assert repr(doc) == "tag('doc')(defer(deferred), 'foo')"
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'name': 'Fred'})
+    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+
+
+def test_defer_with_notag():
+    from kemmering import bind, defer, notag, tag
+
+    @defer
+    def deferred(context):
+        return notag(
+            tag('p')('Hello {}!'.format(context['name'])),
+            tag('p')('Nice to meet you!')
+        )
+    doc = tag('doc')(deferred, 'foo')
+    assert repr(doc) == "tag('doc')(defer(deferred), 'foo')"
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'name': 'Fred'})
+    assert str(bound) == ('<doc><p>Hello Fred!</p>'
+                          '<p>Nice to meet you!</p>foo</doc>')
+    assert repr(bound) == ("tag('doc')(notag(tag('p')('Hello Fred!'), "
+                           "tag('p')('Nice to meet you!')), 'foo')")
