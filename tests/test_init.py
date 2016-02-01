@@ -126,6 +126,28 @@ def test_from_context():
     assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
 
 
+def test_from_context_key_error():
+    from kemmering import bind, from_context, tag
+
+    doc = tag('doc')(
+        tag('p')('Hello ', from_context('name'), '!'), 'foo')
+    with pytest.raises(KeyError):
+        bind(doc, {})
+
+
+def test_from_context_use_default():
+    from kemmering import bind, from_context, tag
+
+    doc = tag('doc')(
+        tag('p')('Hello ', from_context('name', 'World'), '!'), 'foo')
+    assert repr(doc) == ("tag('doc')(tag('p')"
+                         "('Hello ', from_context('name'), '!'), 'foo')")
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {})
+    assert str(bound) == '<doc><p>Hello World!</p>foo</doc>'
+
+
 def test_format_context():
     from kemmering import bind, format_context, tag
 

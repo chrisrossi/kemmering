@@ -114,11 +114,15 @@ class defer(object):
 
 class from_context(defer):
 
-    def __init__(self, key):
+    def __init__(self, key, default=_nothing):
         self.key = key
+        self.default = default
 
     def _bind(self, context):
-        return context[self.key]
+        value = context.get(self.key, self.default)
+        if value is _nothing:
+            raise KeyError(self.key)
+        return value
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self.key))
