@@ -238,3 +238,45 @@ def test_cond_no_negative():
     assert str(bound) == '<doc><p>Hi there. How do you do?</p></doc>'
     bound = bind(doc, {'user': 'grunt'})
     assert str(bound) == '<doc><p>Hi there.</p></doc>'
+
+
+def test_loop():
+    from kemmering import bind, from_context, loop, tag
+
+    doc = tag('doc', foo=from_context('foo'))(
+        tag('ul')(
+            loop('foo', 'animals',
+                 tag('li')(from_context('foo')))),
+        'foo is ', from_context('foo'),
+    )
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'animals': ['kitty', 'puppy', 'bunny'],
+                       'foo': 'bar'})
+    assert str(bound) == (
+        '<doc foo="bar"><ul>'
+        '<li>kitty</li><li>puppy</li><li>bunny</li>'
+        '</ul>foo is bar</doc>')
+
+
+def test_loop_seq_callable():
+    from kemmering import bind, from_context, loop, tag
+
+    def animals(context):
+        yield 'kitty'
+        yield 'puppy'
+        yield 'bunny'
+
+    doc = tag('doc', foo=from_context('foo'))(
+        tag('ul')(
+            loop('foo', animals,
+                 tag('li')(from_context('foo')))),
+        'foo is ', from_context('foo'),
+    )
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'foo': 'bar'})
+    assert str(bound) == (
+        '<doc foo="bar"><ul>'
+        '<li>kitty</li><li>puppy</li><li>bunny</li>'
+        '</ul>foo is bar</doc>')

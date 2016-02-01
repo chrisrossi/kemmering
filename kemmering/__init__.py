@@ -172,7 +172,6 @@ class in_context(defer):
         return '{}({})'.format(type(self).__name__, repr(self.keys))
 
 
-
 class format_context(defer):
 
     def __init__(self, s):
@@ -206,3 +205,24 @@ class cond(defer):
             '' if self.negative is _nothing else
             ', {}'.format(repr(self.negative))
         )
+
+
+class loop(defer):
+
+    def __init__(self, key, seq, template):
+        self.key = key
+        self.seq = seq
+        self.template = template
+
+    def _bind(self, context):
+        seq = self.seq(context) if callable(self.seq) else context[self.seq]
+        return notag(*(
+            self.template._bind(assoc(context, self.key, value))
+            for value in seq
+        ))
+
+
+def assoc(d, k, v):
+    d = d.copy()
+    d[k] = v
+    return d
