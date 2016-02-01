@@ -135,9 +135,42 @@ class from_context(defer):
         if value is _nothing:
             raise KeyError(self.key)
         return value
+    """
+        keys = self.key if type(self.key) in (list, tuple) else (self.key,)
+        while keys:
+            key = keys[0]
+            keys = keys[1:]
+            context = context.get(key, self.default)
+            if context is _nothing:
+                raise KeyError(self.key)
+        return context
+    """
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self.key))
+
+
+class in_context(defer):
+
+    def __init__(self, keys, default=_nothing):
+        self.keys = keys
+        self.default = default
+
+    def _bind(self, context):
+        keys = self.keys
+        while keys:
+            key = keys[0]
+            keys = keys[1:]
+            context = context.get(key, _nothing)
+            if context is _nothing:
+                if self.default is _nothing:
+                    raise KeyError(self.keys)
+                return self.default
+        return context
+
+    def __repr__(self):
+        return '{}({})'.format(type(self).__name__, repr(self.keys))
+
 
 
 class format_context(defer):

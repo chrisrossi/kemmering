@@ -148,6 +148,48 @@ def test_from_context_use_default():
     assert str(bound) == '<doc><p>Hello World!</p>foo</doc>'
 
 
+def test_in_context():
+    from kemmering import bind, in_context, tag
+
+    doc = tag('doc')(
+        tag('p')('Hello ', in_context(['user', 'name']), '!'), 'foo')
+    assert repr(doc) == ("tag('doc')(tag('p')"
+                         "('Hello ', in_context(['user', 'name']), '!'),"
+                         " 'foo')")
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'user': {'name': 'Fred'}})
+    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+
+
+def test_in_context_key_error():
+    from kemmering import bind, in_context, tag
+
+    doc = tag('doc')(
+        tag('p')('Hello ', in_context(['user', 'name']), '!'), 'foo')
+    assert repr(doc) == ("tag('doc')(tag('p')"
+                         "('Hello ', in_context(['user', 'name']), '!'),"
+                         " 'foo')")
+    with pytest.raises(ValueError):
+        str(doc)
+    with pytest.raises(KeyError):
+        bind(doc, {'user': {}})
+
+
+def test_in_context_use_default():
+    from kemmering import bind, in_context, tag
+
+    doc = tag('doc')(
+        tag('p')('Hello ', in_context(['user', 'name'], 'World'), '!'), 'foo')
+    assert repr(doc) == ("tag('doc')(tag('p')"
+                         "('Hello ', in_context(['user', 'name']), '!'),"
+                         " 'foo')")
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {})
+    assert str(bound) == '<doc><p>Hello World!</p>foo</doc>'
+
+
 def test_format_context():
     from kemmering import bind, format_context, tag
 
