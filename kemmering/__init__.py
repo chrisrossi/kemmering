@@ -11,7 +11,7 @@ class tag(object):
             self.self_closing = True
             tag = tag[:-1]
         self.tag = tag
-        self.attrs = attrs
+        self.attrs = {k: v for k, v in attrs.items() if v is not None}
         self.children = ()
 
     def __call__(self, *children):
@@ -82,6 +82,9 @@ class notag(tag):
         self(*children)
 
 
+_nothing = notag()
+
+
 class text(str):
 
     def _stream(self):
@@ -131,3 +134,26 @@ class format_context(defer):
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self.s))
+
+
+class cond(defer):
+
+    def __init__(self, condition, affirmative, negative=_nothing):
+        self.condition = condition
+        self.affirmative = affirmative
+        self.negative = negative
+
+    def _bind(self, context):
+        if self.condition(context):
+            return self.affirmative
+        else:
+            return self.negative
+
+    def __repr__(self):
+        return '{}({}, {}{})'.format(
+            type(self).__name__,
+            getattr(self.condition, '__name__', repr(self.condition)),
+            repr(self.affirmative),
+            '' if self.negative is _nothing else
+            ', {}'.format(repr(self.negative))
+        )

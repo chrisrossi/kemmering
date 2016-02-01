@@ -69,6 +69,30 @@ def test_defer():
     assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
 
 
+def test_defer_attribute():
+    from kemmering import bind, defer, tag
+
+    @defer
+    def deferred(context):
+        return 'Hello {}!'.format(context['name'])
+    doc = tag('doc', foo=deferred)('woot')
+    assert repr(doc) == "tag('doc', foo=defer(deferred))('woot')"
+    bound = bind(doc, {'name': 'Fred'})
+    assert str(bound) == '<doc foo="Hello Fred!">woot</doc>'
+
+
+def test_defer_remove_attribute():
+    from kemmering import bind, defer, tag
+
+    @defer
+    def deferred(context):
+        return None
+    doc = tag('doc', foo=deferred)('woot')
+    assert repr(doc) == "tag('doc', foo=defer(deferred))('woot')"
+    bound = bind(doc, {'name': 'Fred'})
+    assert str(bound) == '<doc>woot</doc>'
+
+
 def test_defer_with_notag():
     from kemmering import bind, defer, notag, tag
 
@@ -112,3 +136,41 @@ def test_format_context():
         str(doc)
     bound = bind(doc, {'name': 'Fred'})
     assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+
+
+def test_cond():
+    from kemmering import bind, cond, tag
+
+    def is_admin(context):
+        return context['user'] == 'admin'
+    doc = tag('doc')(cond(is_admin,
+                          tag('p')('At your service!'),
+                          tag('p')('Go away!')))
+    assert repr(doc) == (
+        "tag('doc')(cond(is_admin, "
+        "tag('p')('At your service!'), "
+        "tag('p')('Go away!')))")
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'user': 'admin'})
+    assert str(bound) == '<doc><p>At your service!</p></doc>'
+    bound = bind(doc, {'user': 'grunt'})
+    assert str(bound) == '<doc><p>Go away!</p></doc>'
+
+
+def test_cond_no_negative():
+    from kemmering import bind, cond, tag
+
+    def is_admin(context):
+        return context['user'] == 'admin'
+    doc = tag('doc')(tag('p')('Hi there.', cond(
+        is_admin, ' How do you do?')))
+    assert repr(doc) == (
+        "tag('doc')(tag('p')('Hi there.', cond("
+        "is_admin, ' How do you do?')))")
+    with pytest.raises(ValueError):
+        str(doc)
+    bound = bind(doc, {'user': 'admin'})
+    assert str(bound) == '<doc><p>Hi there. How do you do?</p></doc>'
+    bound = bind(doc, {'user': 'grunt'})
+    assert str(bound) == '<doc><p>Hi there.</p></doc>'
