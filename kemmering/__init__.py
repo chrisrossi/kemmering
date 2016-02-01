@@ -7,14 +7,18 @@ class tag(object):
     self_closing = False
 
     def __init__(self, tag, **attrs):
+        self._init(tag, attrs, ())
+
+    def _init(self, tag, attrs, children):
         if tag and tag.endswith('/'):
             self.self_closing = True
             tag = tag[:-1]
         self.tag = tag
         self.attrs = {k: v for k, v in attrs.items() if v is not None}
         self.children = ()
+        self._extend(*children)
 
-    def __call__(self, *children):
+    def _extend(self, *children):
         def mkchild(x):
             if isinstance(x, str):
                 x = text(x)
@@ -23,6 +27,8 @@ class tag(object):
         self.children += tuple(mkchild(x) for x in children)
         return self
 
+    __call__ = _extend
+
     def _bind(self, context):
         def bind(x):
             if hasattr(x, '_bind'):
@@ -30,7 +36,13 @@ class tag(object):
             return x
         attrs = {k: bind(v) for k, v in self.attrs.items()}
         children = tuple(bind(child) for child in self.children)
-        return type(self)(self.tag, **attrs)(*children)
+        return self._copy(attrs, children)
+
+    def _copy(self, attrs, children):
+        cls = type(self)
+        obj = cls.__new__(cls)
+        obj._init(self.tag, attrs, children)
+        return obj
 
     def __str__(self):
         return ''.join(self._stream())
