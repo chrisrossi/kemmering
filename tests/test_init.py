@@ -1,58 +1,84 @@
 import pytest
+import sys
+
+PY2 = sys.version_info[0] == 2
+STR = unicode if PY2 else str  # nopep8
+if PY2:
+    def REPR(o):
+        return repr(o).replace('u"', '"').replace("u'", "'")
+else:
+    REPR = repr
 
 
 def test_tag():
     from kemmering import tag
-    assert str(tag('hello')) == '<hello></hello>'
+    assert STR(tag('hello')) == '<hello></hello>'
+
+
+def test_tag_non_ascii():
+    from kemmering import tag
+    assert STR(tag(u'h\u03b5llo')) == u'<h\u03b5llo></h\u03b5llo>'
 
 
 def test_tag_repr():
     from kemmering import tag
-    assert repr(tag('hello')) == "tag('hello')"
+    assert REPR(tag('hello')) == "tag('hello')"
 
 
 def test_tag_with_text():
     from kemmering import tag
-    assert str(tag('hello')('world')) == '<hello>world</hello>'
+    assert STR(tag('hello')('world')) == '<hello>world</hello>'
+
+
+def test_tag_with_text_non_ascii():
+    from kemmering import tag
+    assert STR(tag('hello')(u'w\u03bfrld')) == u'<hello>w\u03bfrld</hello>'
 
 
 def test_tag_with_text_repr():
     from kemmering import tag
-    assert repr(tag('hello')('world')) == "tag('hello')('world')"
+    assert REPR(tag('hello')('world')) == "tag('hello')('world')"
 
 
 def test_nested_tags():
     from kemmering import tag
-    assert str(tag('a')(tag('b/'))) == '<a><b/></a>'
+    assert STR(tag('a')(tag('b/'))) == '<a><b/></a>'
 
 
 def test_nested_tags_repr():
     from kemmering import tag
-    assert repr(tag('a')(tag('b/'))) == "tag('a')(tag('b/'))"
+    assert REPR(tag('a')(tag('b/'))) == "tag('a')(tag('b/'))"
 
 
 def test_tag_with_attributes():
     from kemmering import tag
-    result = str(tag('a/', foo='bar', bar='baz'))
+    result = STR(tag('a/', foo='bar', bar='baz'))
     assert (result == '<a foo="bar" bar="baz"/>' or
             result == '<a bar="baz" foo="bar"/>')
 
 
+def test_tag_with_attributes_non_ascii():
+    from kemmering import tag
+    result = STR(tag('a/', foo=u'b\u03b1r', bar='baz'))
+    assert (result == u'<a foo="b\u03b1r" bar="baz"/>' or
+            result == u'<a bar="baz" foo="b\u03b1r"/>')
+
+
 def test_tag_with_attributes_repr():
     from kemmering import tag
-    result = repr(tag('a/', foo='bar', bar='baz'))
+    result = REPR(tag('a/', foo='bar', bar='baz'))
     assert (result == "tag('a/', foo='bar', bar='baz')" or
             result == "tag('a/', bar='baz', foo='bar')")
 
 
 def test_tag_with_reserved_word_attributes():
     from kemmering import tag
-    assert str(tag('a/', class_='foo')) == '<a class="foo"/>'
+    assert STR(tag('a/', class_='foo')) == '<a class="foo"/>'
 
 
 def test_tag_with_reserved_word_attributes_repr():
     from kemmering import tag
-    assert repr(tag('a/', class_='foo')) == "tag('a/', class_='foo')"
+    assert REPR(tag('a/', class_='foo')) == "tag('a/', class_='foo')"
 
 
 def test_defer():
@@ -62,11 +88,11 @@ def test_defer():
     def deferred(context):
         return tag('p')('Hello {}!'.format(context['name']))
     doc = tag('doc')(deferred, 'foo')
-    assert repr(doc) == "tag('doc')(defer(deferred), 'foo')"
+    assert REPR(doc) == "tag('doc')(defer(deferred), 'foo')"
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'name': 'Fred'})
-    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+    assert STR(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
 
 
 def test_defer_attribute():
@@ -76,9 +102,9 @@ def test_defer_attribute():
     def deferred(context):
         return 'Hello {}!'.format(context['name'])
     doc = tag('doc', foo=deferred)('woot')
-    assert repr(doc) == "tag('doc', foo=defer(deferred))('woot')"
+    assert REPR(doc) == "tag('doc', foo=defer(deferred))('woot')"
     bound = bind(doc, {'name': 'Fred'})
-    assert str(bound) == '<doc foo="Hello Fred!">woot</doc>'
+    assert STR(bound) == '<doc foo="Hello Fred!">woot</doc>'
 
 
 def test_defer_remove_attribute():
@@ -88,9 +114,9 @@ def test_defer_remove_attribute():
     def deferred(context):
         return None
     doc = tag('doc', foo=deferred)('woot')
-    assert repr(doc) == "tag('doc', foo=defer(deferred))('woot')"
+    assert REPR(doc) == "tag('doc', foo=defer(deferred))('woot')"
     bound = bind(doc, {'name': 'Fred'})
-    assert str(bound) == '<doc>woot</doc>'
+    assert STR(bound) == '<doc>woot</doc>'
 
 
 def test_defer_with_notag():
@@ -103,13 +129,13 @@ def test_defer_with_notag():
             tag('p')('Nice to meet you!')
         )
     doc = tag('doc')(deferred, 'foo')
-    assert repr(doc) == "tag('doc')(defer(deferred), 'foo')"
+    assert REPR(doc) == "tag('doc')(defer(deferred), 'foo')"
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'name': 'Fred'})
-    assert str(bound) == ('<doc><p>Hello Fred!</p>'
+    assert STR(bound) == ('<doc><p>Hello Fred!</p>'
                           '<p>Nice to meet you!</p>foo</doc>')
-    assert repr(bound) == ("tag('doc')(notag(tag('p')('Hello Fred!'), "
+    assert REPR(bound) == ("tag('doc')(notag(tag('p')('Hello Fred!'), "
                            "tag('p')('Nice to meet you!')), 'foo')")
 
 
@@ -118,12 +144,12 @@ def test_from_context():
 
     doc = tag('doc')(
         tag('p')('Hello ', from_context('name'), '!'), 'foo')
-    assert repr(doc) == ("tag('doc')(tag('p')"
+    assert REPR(doc) == ("tag('doc')(tag('p')"
                          "('Hello ', from_context('name'), '!'), 'foo')")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'name': 'Fred'})
-    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+    assert STR(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
 
 
 def test_from_context_key_error():
@@ -140,12 +166,12 @@ def test_from_context_use_default():
 
     doc = tag('doc')(
         tag('p')('Hello ', from_context('name', 'World'), '!'), 'foo')
-    assert repr(doc) == ("tag('doc')(tag('p')"
+    assert REPR(doc) == ("tag('doc')(tag('p')"
                          "('Hello ', from_context('name'), '!'), 'foo')")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {})
-    assert str(bound) == '<doc><p>Hello World!</p>foo</doc>'
+    assert STR(bound) == '<doc><p>Hello World!</p>foo</doc>'
 
 
 def test_in_context():
@@ -153,13 +179,13 @@ def test_in_context():
 
     doc = tag('doc')(
         tag('p')('Hello ', in_context(['user', 'name']), '!'), 'foo')
-    assert repr(doc) == ("tag('doc')(tag('p')"
+    assert REPR(doc) == ("tag('doc')(tag('p')"
                          "('Hello ', in_context(['user', 'name']), '!'),"
                          " 'foo')")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'user': {'name': 'Fred'}})
-    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+    assert STR(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
 
 
 def test_in_context_key_error():
@@ -167,11 +193,11 @@ def test_in_context_key_error():
 
     doc = tag('doc')(
         tag('p')('Hello ', in_context(['user', 'name']), '!'), 'foo')
-    assert repr(doc) == ("tag('doc')(tag('p')"
+    assert REPR(doc) == ("tag('doc')(tag('p')"
                          "('Hello ', in_context(['user', 'name']), '!'),"
                          " 'foo')")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     with pytest.raises(KeyError):
         bind(doc, {'user': {}})
 
@@ -181,25 +207,25 @@ def test_in_context_use_default():
 
     doc = tag('doc')(
         tag('p')('Hello ', in_context(['user', 'name'], 'World'), '!'), 'foo')
-    assert repr(doc) == ("tag('doc')(tag('p')"
+    assert REPR(doc) == ("tag('doc')(tag('p')"
                          "('Hello ', in_context(['user', 'name']), '!'),"
                          " 'foo')")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {})
-    assert str(bound) == '<doc><p>Hello World!</p>foo</doc>'
+    assert STR(bound) == '<doc><p>Hello World!</p>foo</doc>'
 
 
 def test_format_context():
     from kemmering import bind, format_context, tag
 
     doc = tag('doc')(tag('p')(format_context('Hello {name}!')), 'foo')
-    assert repr(doc) == ("tag('doc')(tag('p')"
+    assert REPR(doc) == ("tag('doc')(tag('p')"
                          "(format_context('Hello {name}!')), 'foo')")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'name': 'Fred'})
-    assert str(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
+    assert STR(bound) == '<doc><p>Hello Fred!</p>foo</doc>'
 
 
 def test_cond():
@@ -210,16 +236,16 @@ def test_cond():
     doc = tag('doc')(cond(is_admin,
                           tag('p')('At your service!'),
                           tag('p')('Go away!')))
-    assert repr(doc) == (
+    assert REPR(doc) == (
         "tag('doc')(cond(is_admin, "
         "tag('p')('At your service!'), "
         "tag('p')('Go away!')))")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'user': 'admin'})
-    assert str(bound) == '<doc><p>At your service!</p></doc>'
+    assert STR(bound) == '<doc><p>At your service!</p></doc>'
     bound = bind(doc, {'user': 'grunt'})
-    assert str(bound) == '<doc><p>Go away!</p></doc>'
+    assert STR(bound) == '<doc><p>Go away!</p></doc>'
 
 
 def test_cond_no_negative():
@@ -229,15 +255,15 @@ def test_cond_no_negative():
         return context['user'] == 'admin'
     doc = tag('doc')(tag('p')('Hi there.', cond(
         is_admin, ' How do you do?')))
-    assert repr(doc) == (
+    assert REPR(doc) == (
         "tag('doc')(tag('p')('Hi there.', cond("
         "is_admin, ' How do you do?')))")
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'user': 'admin'})
-    assert str(bound) == '<doc><p>Hi there. How do you do?</p></doc>'
+    assert STR(bound) == '<doc><p>Hi there. How do you do?</p></doc>'
     bound = bind(doc, {'user': 'grunt'})
-    assert str(bound) == '<doc><p>Hi there.</p></doc>'
+    assert STR(bound) == '<doc><p>Hi there.</p></doc>'
 
 
 def test_loop():
@@ -250,10 +276,10 @@ def test_loop():
         'foo is ', from_context('foo'),
     )
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'animals': ['kitty', 'puppy', 'bunny'],
                        'foo': 'bar'})
-    assert str(bound) == (
+    assert STR(bound) == (
         '<doc foo="bar"><ul>'
         '<li>kitty</li><li>puppy</li><li>bunny</li>'
         '</ul>foo is bar</doc>')
@@ -274,9 +300,9 @@ def test_loop_seq_callable():
         'foo is ', from_context('foo'),
     )
     with pytest.raises(ValueError):
-        str(doc)
+        STR(doc)
     bound = bind(doc, {'foo': 'bar'})
-    assert str(bound) == (
+    assert STR(bound) == (
         '<doc foo="bar"><ul>'
         '<li>kitty</li><li>puppy</li><li>bunny</li>'
         '</ul>foo is bar</doc>')

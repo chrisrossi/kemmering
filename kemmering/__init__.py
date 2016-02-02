@@ -1,6 +1,11 @@
 """
 Kemmering tag
 """
+import sys
+
+PY2 = sys.version_info[0] == 2
+strbase = basestring if PY2 else str  # nopep8
+strclass = unicode if PY2 else str    # nopep8
 
 
 class tag(object):
@@ -14,13 +19,14 @@ class tag(object):
             self.self_closing = True
             tag = tag[:-1]
         self.tag = tag
-        self.attrs = {k: v for k, v in attrs.items() if v is not None}
+        self.attrs = {k: v for k, v in attrs.items()
+                      if v is not None}
         self.children = ()
         self._extend(*children)
 
     def _extend(self, *children):
         def mkchild(x):
-            if isinstance(x, str):
+            if isinstance(x, strbase):
                 x = text(x)
             x.parent = self
             return x
@@ -45,7 +51,9 @@ class tag(object):
         return obj
 
     def __str__(self):
-        return ''.join(self._stream())
+        return u''.join(self._stream())
+
+    __unicode__ = __str__
 
     def __repr__(self):
         if self.attrs:
@@ -68,23 +76,23 @@ class tag(object):
     def _stream(self):
         attrs = {k: v for k, v in self.attrs.items()}
         if attrs:
-            attrs = ' ' + ' '.join(
-                ('%s="%s"' % (k.rstrip('_'), v) for k, v in attrs.items())
+            attrs = u' ' + u' '.join(
+                (u'%s="%s"' % (k.rstrip(u'_'), v) for k, v in attrs.items())
             )
         else:
-            attrs = ''
+            attrs = u''
 
         if self.self_closing and not self.children:
-            yield '<%s%s/>' % (self.tag, attrs)
+            yield u'<%s%s/>' % (self.tag, attrs)
             return
 
         if self.tag:
-            yield '<%s%s>' % (self.tag, attrs)
+            yield u'<%s%s>' % (self.tag, attrs)
         for child in self.children:
             for x in child._stream():
                 yield x
         if self.tag:
-            yield '</%s>' % self.tag
+            yield u'</%s>' % self.tag
 
 
 class notag(tag):
@@ -97,7 +105,7 @@ class notag(tag):
 _nothing = notag()
 
 
-class text(str):
+class text(strclass):
 
     def _stream(self):
         yield self
@@ -135,16 +143,6 @@ class from_context(defer):
         if value is _nothing:
             raise KeyError(self.key)
         return value
-    """
-        keys = self.key if type(self.key) in (list, tuple) else (self.key,)
-        while keys:
-            key = keys[0]
-            keys = keys[1:]
-            context = context.get(key, self.default)
-            if context is _nothing:
-                raise KeyError(self.key)
-        return context
-    """
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self.key))
