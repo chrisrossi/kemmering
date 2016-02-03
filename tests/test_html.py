@@ -21,6 +21,18 @@ def test_doc():
     )
 
 
+def test_pretty():
+    from kemmering.html import doc, html, head, pretty, title
+    assert pretty(doc(html()(head()(title()('foo'))))) == (
+        "<!DOCTYPE html>\n"
+        "<html>\n"
+        "  <head>\n"
+        "    <title>foo</title>\n"
+        "  </head>\n"
+        "</html>\n"
+    )
+
+
 def test_a():
     from kemmering.html import a
     assert str(a(href='foo/bar')('Howdy!')) == '<a href="foo/bar">Howdy!</a>'

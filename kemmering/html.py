@@ -3,10 +3,16 @@ HTML tags
 
 Reference: http://www.html-5-tutorial.com/all-html-tags.htm
 """
+import sys
+
 from collections import OrderedDict
 from functools import partial
+from xml.dom import minidom
 
 from . import tag
+
+PY2 = sys.version_info[0] == 2
+strclass = unicode if PY2 else str    # nopep8
 
 
 class style(object):
@@ -44,6 +50,11 @@ class doc(tag):
         yield u'<!DOCTYPE html>\n\n'
         for child in super(doc, self)._stream():
             yield child
+
+
+def pretty(doc):
+    xml = minidom.parseString(strclass(doc))
+    return xml.toprettyxml(indent="  ").split('\n', 1)[1]
 
 
 a = partial(tag, 'a')
