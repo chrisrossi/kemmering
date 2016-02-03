@@ -16,20 +16,35 @@ class style(object):
         self(*args)
 
     def _stream(self):
-        yield '\n<style>\n'
+        yield u'\n<style>\n'
         for selector, style in self.styles.items():
-            yield '  {} {{\n'.format(selector)
+            yield u'  {} {{\n'.format(selector)
             for k, v in style.items():
-                yield '    {}: {};\n'.format(k, v)
-            yield '  }\n'
-        yield '</style>\n'
+                yield u'    {}: {};\n'.format(k, v)
+            yield u'  }\n'
+        yield u'</style>\n'
 
     def __call__(self, *args):
         for selector, style in args:
             self.styles[selector] = style
 
     def __str__(self):
-        return ''.join(self._stream())
+        return u''.join(self._stream())
+
+    __unicode__ = __str__
+
+
+class doc(tag):
+
+    def __init__(self, *children):
+        super(doc, self).__init__(None)
+        self(*children)
+
+    def _stream(self):
+        yield u'<!DOCTYPE html>\n\n'
+        for child in super(doc, self)._stream():
+            yield child
+
 
 a = partial(tag, 'a')
 abbr = partial(tag, 'abbr')

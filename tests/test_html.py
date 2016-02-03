@@ -13,6 +13,14 @@ def test_style():
     )
 
 
+def test_doc():
+    from kemmering.html import doc, html, head, title
+    assert str(doc(html()(head()(title()('foo'))))) == (
+        "<!DOCTYPE html>\n\n"
+        "<html><head><title>foo</title></head></html>"
+    )
+
+
 def test_a():
     from kemmering.html import a
     assert str(a(href='foo/bar')('Howdy!')) == '<a href="foo/bar">Howdy!</a>'
