@@ -22,20 +22,20 @@ class style(object):
         self(*args)
 
     def _stream(self):
-        yield u'\n<style>\n'
+        yield '\n<style>\n'
         for selector, style in self.styles.items():
-            yield u'  {} {{\n'.format(selector)
+            yield '  {} {{\n'.format(selector)
             for k, v in style.items():
-                yield u'    {}: {};\n'.format(k, v)
-            yield u'  }\n'
-        yield u'</style>\n'
+                yield '    {}: {};\n'.format(k, v)
+            yield '  }\n'
+        yield '</style>\n'
 
     def __call__(self, *args):
         for selector, style in args:
             self.styles[selector] = style
 
     def __str__(self):
-        return u''.join(self._stream())
+        return ''.join(self._stream())
 
     __unicode__ = __str__
 
@@ -47,7 +47,7 @@ class doc(tag):
         self(*children)
 
     def _stream(self):
-        yield u'<!DOCTYPE html>\n\n'
+        yield '<!DOCTYPE html>\n\n'
         for child in super(doc, self)._stream():
             yield child
 

@@ -36,22 +36,19 @@ class tag(object):
     __call__ = _extend
 
     def _bind(self, context):
-        def bind(x):
-            if hasattr(x, '_bind'):
-                return x._bind(context)
-            return x
-        attrs = {k: bind(v) for k, v in self.attrs.items()}
-        children = tuple(bind(child) for child in self.children)
+        attrs = {k: bind(v, context) for k, v in self.attrs.items()}
+        children = tuple(bind(child, context) for child in self.children)
         return self._copy(attrs, children)
 
     def _copy(self, attrs, children):
         cls = type(self)
         obj = cls.__new__(cls)
         obj._init(self.tag, attrs, children)
+        obj.self_closing = self.self_closing
         return obj
 
     def __str__(self):
-        return u''.join(self._stream())
+        return ''.join(self._stream())
 
     __unicode__ = __str__
 
@@ -76,23 +73,23 @@ class tag(object):
     def _stream(self):
         attrs = {k: v for k, v in self.attrs.items()}
         if attrs:
-            attrs = u' ' + u' '.join(
-                (u'%s="%s"' % (k.rstrip(u'_'), v) for k, v in attrs.items())
+            attrs = ' ' + ' '.join(
+                ('%s="%s"' % (k.rstrip('_'), v) for k, v in attrs.items())
             )
         else:
-            attrs = u''
+            attrs = ''
 
         if self.self_closing and not self.children:
-            yield u'<%s%s/>' % (self.tag, attrs)
+            yield '<%s%s/>' % (self.tag, attrs)
             return
 
         if self.tag:
-            yield u'<%s%s>' % (self.tag, attrs)
+            yield '<%s%s>' % (self.tag, attrs)
         for child in self.children:
             for x in child._stream():
                 yield x
         if self.tag:
-            yield u'</%s>' % self.tag
+            yield '</%s>' % self.tag
 
 
 class notag(tag):
@@ -112,7 +109,9 @@ class text(strclass):
 
 
 def bind(doc, context):
-    return doc._bind(context)
+    if hasattr(doc, '_bind'):
+        doc = doc._bind(context)
+    return doc
 
 
 class defer(object):
@@ -121,7 +120,7 @@ class defer(object):
         self.f = f
 
     def _bind(self, context):
-        return self.f(context)
+        return bind(self.f(context), context)
 
     def _stream(self):
         raise ValueError("Unbound defer, unable to stream.")
@@ -142,7 +141,7 @@ class from_context(defer):
         value = context.get(self.key, self.default)
         if value is _nothing:
             raise KeyError(self.key)
-        return value
+        return bind(value, context)
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self.key))
@@ -155,16 +154,17 @@ class in_context(defer):
         self.default = default
 
     def _bind(self, context):
+        value = context
         keys = self.keys
         while keys:
             key = keys[0]
             keys = keys[1:]
-            context = context.get(key, _nothing)
-            if context is _nothing:
+            value = value.get(key, _nothing)
+            if value is _nothing:
                 if self.default is _nothing:
                     raise KeyError(self.keys)
                 return self.default
-        return context
+        return bind(value, context)
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self.keys))
@@ -191,9 +191,9 @@ class cond(defer):
 
     def _bind(self, context):
         if self.condition(context):
-            return self.affirmative
+            return bind(self.affirmative, context)
         else:
-            return self.negative
+            return bind(self.negative, context)
 
     def __repr__(self):
         return '{}({}, {}{})'.format(
@@ -215,7 +215,7 @@ class loop(defer):
     def _bind(self, context):
         seq = self.seq(context) if callable(self.seq) else context[self.seq]
         return notag(*(
-            self.template._bind(assoc(context, self.key, value))
+            bind(self.template, assoc(context, self.key, value))
             for value in seq
         ))
 

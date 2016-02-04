@@ -126,7 +126,8 @@ def test_defer_with_notag():
     def deferred(context):
         return notag(
             tag('p')('Hello {}!'.format(context['name'])),
-            tag('p')('Nice to meet you!')
+            tag('p')('Nice to meet you!'),
+            tag('br/'),
         )
     doc = tag('doc')(deferred, 'foo')
     assert REPR(doc) == "tag('doc')(defer(deferred), 'foo')"
@@ -134,9 +135,10 @@ def test_defer_with_notag():
         STR(doc)
     bound = bind(doc, {'name': 'Fred'})
     assert STR(bound) == ('<doc><p>Hello Fred!</p>'
-                          '<p>Nice to meet you!</p>foo</doc>')
+                          '<p>Nice to meet you!</p><br/>foo</doc>')
     assert REPR(bound) == ("tag('doc')(notag(tag('p')('Hello Fred!'), "
-                           "tag('p')('Nice to meet you!')), 'foo')")
+                           "tag('p')('Nice to meet you!'), tag('br/')), "
+                           "'foo')")
 
 
 def test_from_context():
@@ -262,6 +264,24 @@ def test_cond_no_negative():
         STR(doc)
     bound = bind(doc, {'user': 'admin'})
     assert STR(bound) == '<doc><p>Hi there. How do you do?</p></doc>'
+    bound = bind(doc, {'user': 'grunt'})
+    assert STR(bound) == '<doc><p>Hi there.</p></doc>'
+
+
+def test_cond_deferred_children():
+    from kemmering import bind, cond, tag, format_context
+
+    def is_admin(context):
+        return context['user'] == 'admin'
+    doc = tag('doc')(tag('p')('Hi there.', cond(
+        is_admin, format_context(' Hi {user}!'))))
+    assert REPR(doc) == (
+        "tag('doc')(tag('p')('Hi there.', cond("
+        "is_admin, format_context(' Hi {user}!'))))")
+    with pytest.raises(ValueError):
+        STR(doc)
+    bound = bind(doc, {'user': 'admin'})
+    assert STR(bound) == '<doc><p>Hi there. Hi admin!</p></doc>'
     bound = bind(doc, {'user': 'grunt'})
     assert STR(bound) == '<doc><p>Hi there.</p></doc>'
 
