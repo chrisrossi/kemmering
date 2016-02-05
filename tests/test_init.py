@@ -250,6 +250,24 @@ def test_cond():
     assert STR(bound) == '<doc><p>Go away!</p></doc>'
 
 
+def test_cond_key_condition():
+    from kemmering import bind, cond, tag
+
+    doc = tag('doc')(cond('admin',
+                          tag('p')('At your service!'),
+                          tag('p')('Go away!')))
+    assert REPR(doc) == (
+        "tag('doc')(cond('admin', "
+        "tag('p')('At your service!'), "
+        "tag('p')('Go away!')))")
+    with pytest.raises(ValueError):
+        STR(doc)
+    bound = bind(doc, {'admin': True})
+    assert STR(bound) == '<doc><p>At your service!</p></doc>'
+    bound = bind(doc, {'admin': False})
+    assert STR(bound) == '<doc><p>Go away!</p></doc>'
+
+
 def test_cond_no_negative():
     from kemmering import bind, cond, tag
 
