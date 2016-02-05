@@ -24,4 +24,11 @@ Template Helpers
 
 .. autoclass:: cond
 
-.. automodule:: html
+.. autoclass:: loop
+
+:mod:`kemmering.html` API
+=========================
+
+.. automodule:: kemmering.html
+   :members:
+

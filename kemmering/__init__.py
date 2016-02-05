@@ -358,6 +358,35 @@ class cond(defer):
 
 
 class loop(defer):
+    """
+    This specialization of `defer` repeats a snippet while iterating over a
+    sequence.
+
+    `key` is the name of a key that will be added to the context on each
+    iteration whose value is the current item in the sequence. This makes the
+    current item available to deferred functions in the repeated snippet.
+
+    `seq` is a function which accepts a single argument, `context`, and returns
+    an iterable sequence.  Alternatively, `seq` can be the name of a key in the
+    current context whose value is an iterable sequence.
+
+    `template` is the snippet to be repeated.
+
+    .. doctest:: api-loop
+
+       >>> from kemmering import bind, from_context, loop, tag
+       >>> def fruits(context):
+       ...     return ['apple', 'pear', 'banana']
+       >>> template = tag('ul')(
+       ...     loop('fruit', fruits, tag('li')(from_context('fruit'))))
+       >>> str(bind(template, {'fruit': 'hamburger'}))
+       '<ul><li>apple</li><li>pear</li><li>banana</li></ul>'
+       >>> template = tag('ul')(
+       ...     loop('fruit', 'fruits', tag('li')(from_context('fruit'))))
+       >>> str(bind(template, {'fruits': ['apple', 'pear', 'banana']}))
+       '<ul><li>apple</li><li>pear</li><li>banana</li></ul>'
+
+    """
 
     def __init__(self, key, seq, template):
         self.key = key

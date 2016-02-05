@@ -6,7 +6,6 @@ Reference: http://www.html-5-tutorial.com/all-html-tags.htm
 import sys
 
 from collections import OrderedDict
-from functools import partial
 from xml.dom import minidom
 
 from . import tag
@@ -14,8 +13,58 @@ from . import tag
 PY2 = sys.version_info[0] == 2
 strclass = unicode if PY2 else str    # nopep8
 
+__all__ = ['doc', 'style', 'pretty']
+
+
+class doc(tag):
+    """
+    Top level HTML5 document, includes doctype declaration.
+
+    .. doctest:: api-doc
+
+       >>> from kemmering.html import doc, html
+       >>> print doc(html())
+       <!DOCTYPE html>
+       <BLANKLINE>
+       <html></html>
+    """
+
+    def __init__(self, *children):
+        super(doc, self).__init__(None)
+        self(*children)
+
+    def _stream(self):
+        yield '<!DOCTYPE html>\n\n'
+        for child in super(doc, self)._stream():
+            yield child
+
 
 class style(object):
+    """
+    HTML tag <style></style>.
+
+    Each positional argument should be a tuple of `(selector, style)` where
+    `selector` is the CSS selector and `style` is a dictionary containing the
+    CSS styles for that selector.  Calling the resulting object uses the same
+    signature and adds those styles to this tag.
+
+    .. doctest:: api-style
+
+       >>> from kemmering.html import style
+       >>> print(style(
+       ...     ('a', {'b': 'c', }),
+       ...     ('d', {'e': 'f'})))
+       <BLANKLINE>
+       <style>
+         a {
+           b: c;
+         }
+         d {
+           e: f;
+         }
+       </style>
+       <BLANKLINE>
+    """
 
     def __init__(self, *args):
         self.styles = OrderedDict()
@@ -40,126 +89,127 @@ class style(object):
     __unicode__ = __str__
 
 
-class doc(tag):
-
-    def __init__(self, *children):
-        super(doc, self).__init__(None)
-        self(*children)
-
-    def _stream(self):
-        yield '<!DOCTYPE html>\n\n'
-        for child in super(doc, self)._stream():
-            yield child
-
-
 def pretty(doc):
     xml = minidom.parseString(strclass(doc))
     return xml.toprettyxml(indent="  ").split('\n', 1)[1]
 
 
-a = partial(tag, 'a')
-abbr = partial(tag, 'abbr')
-address = partial(tag, 'address')
-area = partial(tag, 'area/')
-article = partial(tag, 'article')
-aside = partial(tag, 'aside')
-audio = partial(tag, 'audio')
-b = partial(tag, 'b')
-base = partial(tag, 'base/')
-bdi = partial(tag, 'bdi')
-bdo = partial(tag, 'bdo')
-blockquote = partial(tag, 'blockquote')
-body = partial(tag, 'body')
-br = partial(tag, 'br/')
-button = partial(tag, 'button')
-canvas = partial(tag, 'canvas')
-caption = partial(tag, 'caption')
-cite = partial(tag, 'cite')
-code = partial(tag, 'code')
-col = partial(tag, 'col/')
-colgroup = partial(tag, 'colgroup')
-datalist = partial(tag, 'datalist')
-dd = partial(tag, 'dd')
-del_ = partial(tag, 'del')
-details = partial(tag, 'details')
-dfn = partial(tag, 'dfn')
-div = partial(tag, 'div')
-dl = partial(tag, 'dl')
-dt = partial(tag, 'dt')
-em = partial(tag, 'em')
-embed = partial(tag, 'embed/')
-fieldset = partial(tag, 'fieldset')
-figcaption = partial(tag, 'figcaption')
-figure = partial(tag, 'figure')
-footer = partial(tag, 'footer')
-form = partial(tag, 'form')
-h1 = partial(tag, 'h1')
-h2 = partial(tag, 'h2')
-h3 = partial(tag, 'h3')
-h4 = partial(tag, 'h4')
-h5 = partial(tag, 'h5')
-h6 = partial(tag, 'h6')
-head = partial(tag, 'head')
-header = partial(tag, 'header')
-hgroup = partial(tag, 'hgroup')
-hr = partial(tag, 'hr/')
-html = partial(tag, 'html')
-i = partial(tag, 'i')
-iframe = partial(tag, 'iframe')
-img = partial(tag, 'img/')
-input = partial(tag, 'input/')
-ins = partial(tag, 'ins')
-kbd = partial(tag, 'kbd')
-keygen = partial(tag, 'keygen')
-label = partial(tag, 'label')
-legend = partial(tag, 'legend')
-li = partial(tag, 'li')
-link = partial(tag, 'link/')
-map = partial(tag, 'map')
-mark = partial(tag, 'mark')
-menu = partial(tag, 'menu')
-meta = partial(tag, 'meta/')
-meter = partial(tag, 'meter')
-nav = partial(tag, 'nav')
-noscript = partial(tag, 'noscript')
-object = partial(tag, 'object')
-ol = partial(tag, 'ol')
-optgroup = partial(tag, 'optgroup')
-option = partial(tag, 'option')
-output = partial(tag, 'output')
-p = partial(tag, 'p')
-param = partial(tag, 'param/')
-pre = partial(tag, 'pre')
-progress = partial(tag, 'progress')
-q = partial(tag, 'q')
-rp = partial(tag, 'rp')
-rt = partial(tag, 'rt')
-ruby = partial(tag, 'ruby')
-s = partial(tag, 's')
-samp = partial(tag, 'samp')
-script = partial(tag, 'script')
-section = partial(tag, 'section')
-select = partial(tag, 'select')
-small = partial(tag, 'small')
-source = partial(tag, 'source/')
-span = partial(tag, 'span')
-strong = partial(tag, 'strong')
-sub = partial(tag, 'sub')
-summary = partial(tag, 'summary')
-sup = partial(tag, 'sup')
-table = partial(tag, 'table')
-tbody = partial(tag, 'tbody')
-td = partial(tag, 'td')
-textarea = partial(tag, 'textarea')
-tfoot = partial(tag, 'tfoot')
-th = partial(tag, 'th')
-thead = partial(tag, 'thead')
-time = partial(tag, 'time')
-title = partial(tag, 'title')
-tr = partial(tag, 'tr')
-track = partial(tag, 'track/')
-u = partial(tag, 'u')
-ul = partial(tag, 'ul')
-var = partial(tag, 'var')
-video = partial(tag, 'video')
-wbr = partial(tag, 'wbr')
+def _htmltag(_tag, name=None):
+    def _inner(**attrs):
+        return tag(_tag, **attrs)
+    closing = _tag.endswith('/')
+    __all__.append(name if name else _tag.rstrip('/'))
+    _inner.__name__ = _tag
+    _inner.__doc__ = (
+        "HTML tag <{0}>".format(_tag)
+        if closing else
+        "HTML tag <{0}></{0}>".format(_tag))
+    return _inner
+
+
+a = _htmltag('a')
+abbr = _htmltag('abbr')
+address = _htmltag('address')
+area = _htmltag('area/')
+article = _htmltag('article')
+aside = _htmltag('aside')
+audio = _htmltag('audio')
+b = _htmltag('b')
+base = _htmltag('base/')
+bdi = _htmltag('bdi')
+bdo = _htmltag('bdo')
+blockquote = _htmltag('blockquote')
+body = _htmltag('body')
+br = _htmltag('br/')
+button = _htmltag('button')
+canvas = _htmltag('canvas')
+caption = _htmltag('caption')
+cite = _htmltag('cite')
+code = _htmltag('code')
+col = _htmltag('col/')
+colgroup = _htmltag('colgroup')
+datalist = _htmltag('datalist')
+dd = _htmltag('dd')
+del_ = _htmltag('del', 'del_')
+details = _htmltag('details')
+dfn = _htmltag('dfn')
+div = _htmltag('div')
+dl = _htmltag('dl')
+dt = _htmltag('dt')
+em = _htmltag('em')
+embed = _htmltag('embed/')
+fieldset = _htmltag('fieldset')
+figcaption = _htmltag('figcaption')
+figure = _htmltag('figure')
+footer = _htmltag('footer')
+form = _htmltag('form')
+h1 = _htmltag('h1')
+h2 = _htmltag('h2')
+h3 = _htmltag('h3')
+h4 = _htmltag('h4')
+h5 = _htmltag('h5')
+h6 = _htmltag('h6')
+head = _htmltag('head')
+header = _htmltag('header')
+hgroup = _htmltag('hgroup')
+hr = _htmltag('hr/')
+html = _htmltag('html')
+i = _htmltag('i')
+iframe = _htmltag('iframe')
+img = _htmltag('img/')
+input = _htmltag('input/')
+ins = _htmltag('ins')
+kbd = _htmltag('kbd')
+keygen = _htmltag('keygen')
+label = _htmltag('label')
+legend = _htmltag('legend')
+li = _htmltag('li')
+link = _htmltag('link/')
+map = _htmltag('map')
+mark = _htmltag('mark')
+menu = _htmltag('menu')
+meta = _htmltag('meta/')
+meter = _htmltag('meter')
+nav = _htmltag('nav')
+noscript = _htmltag('noscript')
+object = _htmltag('object')
+ol = _htmltag('ol')
+optgroup = _htmltag('optgroup')
+option = _htmltag('option')
+output = _htmltag('output')
+p = _htmltag('p')
+param = _htmltag('param/')
+pre = _htmltag('pre')
+progress = _htmltag('progress')
+q = _htmltag('q')
+rp = _htmltag('rp')
+rt = _htmltag('rt')
+ruby = _htmltag('ruby')
+s = _htmltag('s')
+samp = _htmltag('samp')
+script = _htmltag('script')
+section = _htmltag('section')
+select = _htmltag('select')
+small = _htmltag('small')
+source = _htmltag('source/')
+span = _htmltag('span')
+strong = _htmltag('strong')
+sub = _htmltag('sub')
+summary = _htmltag('summary')
+sup = _htmltag('sup')
+table = _htmltag('table')
+tbody = _htmltag('tbody')
+td = _htmltag('td')
+textarea = _htmltag('textarea')
+tfoot = _htmltag('tfoot')
+th = _htmltag('th')
+thead = _htmltag('thead')
+time = _htmltag('time')
+title = _htmltag('title')
+tr = _htmltag('tr')
+track = _htmltag('track/')
+u = _htmltag('u')
+ul = _htmltag('ul')
+var = _htmltag('var')
+video = _htmltag('video')
+wbr = _htmltag('wbr')
