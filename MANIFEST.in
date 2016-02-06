@@ -1,0 +1,7 @@
+recursive-include docs *
+recursive-include kemmering *
+
+recursive-exclude docs *.pyc
+recursive-exclude kemmering *.pyc
+
+include *.txt *.ini *.rst
