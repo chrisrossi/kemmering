@@ -367,7 +367,10 @@ class loop(defer):
 
     `key` is the name of a key that will be added to the context on each
     iteration whose value is the current item in the sequence. This makes the
-    current item available to deferred functions in the repeated snippet.
+    current item available to deferred functions in the repeated snippet. `key`
+    may optionally be a `list` or `tuple` of string key names, in which case
+    the sequence values, which should be sequences of equal length, will be
+    unpacked into those keys.
 
     `seq` is a function which accepts a single argument, `context`, and returns
     an iterable sequence.  Alternatively, `seq` can be the name of a key in the
@@ -389,6 +392,22 @@ class loop(defer):
        >>> str(bind(template, {'fruits': ['apple', 'pear', 'banana']}))
        '<ul><li>apple</li><li>pear</li><li>banana</li></ul>'
 
+    And an example which uses unpacking:
+
+    .. doctest:: api-loop
+
+       >>> from kemmering import cond
+       >>> def fruits(context):
+       ...     return enumerate(['apple', 'pear', 'banana'])
+       >>> def is_even(context):
+       ...     return context['i'] % 2 == 0
+       >>> template = tag('ul')(
+       ...     loop(('i', 'fruit'), fruits,
+       ...         tag('li', class_=cond(is_even, 'even', 'odd'))(
+       ...             from_context('fruit'))))
+       >>> str(bind(template, {}))
+       '<ul><li class="even">apple</li><li class="odd">pear</li><li class="even">banana</li></ul>'
+
     """
 
     def __init__(self, key, seq, template):
@@ -397,14 +416,28 @@ class loop(defer):
         self.template = template
 
     def _bind(self, context):
+        def subcontext(value):
+            sub = context.copy()
+            if isinstance(self.key, (list, tuple)):
+                _check_unpack(len(self.key), len(value))
+                sub.update({k: v for k, v in zip(self.key, value)})
+            else:
+                sub[self.key] = value
+            return sub
+
         seq = self.seq(context) if callable(self.seq) else context[self.seq]
         return notag(*(
-            bind(self.template, assoc(context, self.key, value))
+            bind(self.template, subcontext(value))
             for value in seq
         ))
 
 
-def assoc(d, k, v):
-    d = d.copy()
-    d[k] = v
-    return d
+def _check_unpack(expected, got):
+    if got < expected:
+        raise ValueError(
+            'not enough values to unpack (expected {},  got {}'.format(
+                expected, got))
+    elif got > expected:
+        raise ValueError(
+            'too many values to unpack (expected {})'.format(
+                expected))

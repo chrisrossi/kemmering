@@ -344,3 +344,74 @@ def test_loop_seq_callable():
         '<doc foo="bar"><ul>'
         '<li>kitty</li><li>puppy</li><li>bunny</li>'
         '</ul>foo is bar</doc>')
+
+
+def test_loop_unpack():
+    from kemmering import bind, cond, from_context, loop, tag
+
+    def animals(context):
+        return enumerate(('kitty', 'puppy', 'bunny'))
+
+    def is_even(context):
+        return context['i'] % 2 == 0
+
+    doc = tag('doc', foo=from_context('foo'))(
+        tag('ul')(
+            loop(('i', 'foo'), animals,
+                 tag('li', class_=cond(is_even, 'even', 'odd'))(
+                     from_context('foo')))),
+        'foo is ', from_context('foo'),
+    )
+    with pytest.raises(ValueError):
+        STR(doc)
+    bound = bind(doc, {'foo': 'bar'})
+    assert STR(bound) == (
+        '<doc foo="bar"><ul>'
+        '<li class="even">kitty</li>'
+        '<li class="odd">puppy</li>'
+        '<li class="even">bunny</li>'
+        '</ul>foo is bar</doc>')
+
+
+def test_loop_unpack_too_many():
+    from kemmering import bind, cond, from_context, loop, tag
+
+    def animals(context):
+        return enumerate(('kitty', 'puppy', 'bunny'))
+
+    def is_even(context):
+        return context['i'] % 2 == 0
+
+    doc = tag('doc', foo=from_context('foo'))(
+        tag('ul')(
+            loop(('i',), animals,
+                 tag('li', class_=cond(is_even, 'even', 'odd'))(
+                     from_context('foo')))),
+        'foo is ', from_context('foo'),
+    )
+    with pytest.raises(ValueError):
+        STR(doc)
+    with pytest.raises(ValueError):
+        bind(doc, {'foo': 'bar'})
+
+
+def test_loop_unpack_not_enough():
+    from kemmering import bind, cond, from_context, loop, tag
+
+    def animals(context):
+        return enumerate(('kitty', 'puppy', 'bunny'))
+
+    def is_even(context):
+        return context['i'] % 2 == 0
+
+    doc = tag('doc', foo=from_context('foo'))(
+        tag('ul')(
+            loop(('i', 'foo', 'bar'), animals,
+                 tag('li', class_=cond(is_even, 'even', 'odd'))(
+                     from_context('foo')))),
+        'foo is ', from_context('foo'),
+    )
+    with pytest.raises(ValueError):
+        STR(doc)
+    with pytest.raises(ValueError):
+        bind(doc, {'foo': 'bar'})

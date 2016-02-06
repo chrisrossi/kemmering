@@ -399,10 +399,12 @@ if `condition` returns `False`.
 :class:`loop <kemmering.loop>` allows for repeating of a sub-snippet inside of
 another snippet by looping over items in a sequence.  The first argument to
 `loop` is the name of a key to maintain in the `context` with the value of the
-current item being iterated over.  The second argument is either a function,
-which accepts the `context` as an argument and returns a sequence, or the name
-of a key inside of `context` whose value is the sequence to iterate over.  The
-third argument is the snippet to be repeated for each item in the sequence.
+current item being iterated over.  This argument can optionally be a `list` or
+`tuple` of key names, which will cause sequence values to be unpacked.  The
+second argument is either a function, which accepts the `context` as an
+argument and returns a sequence, or the name of a key inside of `context` whose
+value is the sequence to iterate over.  The third argument is the snippet to be
+repeated for each item in the sequence.
 
 .. doctest:: loop
 
