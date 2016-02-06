@@ -133,7 +133,7 @@ Two tags, :class:`doc <kemmering.html.doc>` and
 `tag`.  See their respective API docs for more information.
 
 Make it pretty
-==============
+++++++++++++++
 
 The :mod:`html <kemmering.html>` package also as a 
 :func:`pretty <kemmering.html.pretty>` function that will render a snippet
@@ -181,6 +181,9 @@ trailing underscore will be elided from the ultimate attribute name.
 
 Templates
 =========
+
+`defer` and `bind`
+------------------
 
 Using :class:`defer <kemmering.defer>` and :class:`bind <kemmering.bind>` you
 can create and render templates.  `defer` allows you to create an element that
