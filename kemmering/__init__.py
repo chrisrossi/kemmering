@@ -395,6 +395,7 @@ class loop(defer):
     .. doctest:: api-loop
 
        >>> from kemmering import cond
+       >>> from kemmering.html import pretty
        >>> def fruits(context):
        ...     return enumerate(['apple', 'pear', 'banana'])
        >>> def is_even(context):
@@ -403,9 +404,13 @@ class loop(defer):
        ...     loop(('i', 'fruit'), fruits,
        ...         tag('li', class_=cond(is_even, 'even', 'odd'))(
        ...             from_context('fruit'))))
-       >>> str(bind(template, {}))
-       '<ul><li class="even">apple</li><li class="odd">pear</li><li class="even">banana</li></ul>'
-
+       >>> print(pretty(bind(template, {})))
+       <ul>
+         <li class="even">apple</li>
+         <li class="odd">pear</li>
+         <li class="even">banana</li>
+       </ul>
+       <BLANKLINE>
     """
 
     def __init__(self, key, seq, template):
