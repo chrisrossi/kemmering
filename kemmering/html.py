@@ -23,7 +23,7 @@ class doc(tag):
     .. doctest:: api-doc
 
        >>> from kemmering.html import doc, html
-       >>> print doc(html())
+       >>> print(doc(html()))
        <!DOCTYPE html>
        <BLANKLINE>
        <html></html>
@@ -89,8 +89,25 @@ class style(object):
     __unicode__ = __str__
 
 
-def pretty(doc):
-    xml = minidom.parseString(strclass(doc))
+def pretty(snippet):
+    """
+    Render a snippet of HTML as a string with line breaks and indentation.
+    This is not necessarily a particularly fast implementation, but it can be
+    useful for debugging.
+
+    .. doctest:: api-pretty
+
+       >>> from kemmering import tag
+       >>> from kemmering.html import pretty
+       >>> print(pretty(tag('a')(tag('b')(tag('c/')))))
+       <a>
+         <b>
+           <c/>
+         </b>
+       </a>
+       <BLANKLINE>
+    """
+    xml = minidom.parseString(strclass(snippet))
     return xml.toprettyxml(indent="  ").split('\n', 1)[1]
 
 

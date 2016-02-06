@@ -44,7 +44,7 @@ Sci-fi, not yet released.
 Tags
 ====
 
-The heart and soul of :term:`Kemmering` is the :class:`tag` class:
+The heart and soul of `Kemmering` is the :class:`tag <kemmering.tag>` class:
 
 .. doctest:: hello-world
 
@@ -57,6 +57,15 @@ In a nutshell, the first and only positional argument is the name of the tag,
 any keyword arguments are attributes, and calling the result adds children, 
 where children can be more tags or text elements.  Use `str` to realize a
 snippet as a string.  
+
+Appending a forward slash (`/`) character to the end of the tag name creates a
+self-closing tag.
+
+.. doctest:: hello
+
+   >>> from kemmering import tag
+   >>> str(tag('hello/'))
+   '<hello/>'
 
 If you are still using Python 2, you'll want to use `unicode` instead of `str`:
 
@@ -87,6 +96,9 @@ A tag may be called more than once to add children to it:
    >>> str(ul)
    '<ul><li>one</li><li>two</li></ul>'
 
+Partial Pattern
+---------------
+
 A pattern some might find useful is to use partials to create tag-specific 
 callables. For example:
 
@@ -98,8 +110,11 @@ callables. For example:
    >>> str(div()('Hello World!'))
    '<div>Hello World!</div>'
 
-This is the basic strategy used by the vast majority of the `kemmering.html`
-package, which contains all valid HTML5 tags:
+HTML Tags
+---------
+
+The partial pattern is the basic strategy used by the vast majority of the
+:mod:`kemmering.html` package, which contains all valid HTML5 tags:
 
 .. doctest:: html
 
@@ -112,6 +127,41 @@ package, which contains all valid HTML5 tags:
    ... )
    >>> str(snippet)
    '<dl class="fruits"><dt>Pomegranate</dt><dd>It has <em>lots</em> of seeds!</dd><dt>Kiwi</dt><dd>It tastes like strawberry.</dd></dl>'
+
+Two tags, :class:`doc <kemmering.html.doc>` and 
+:class:`style <kemmering.html.style>` have different behavior from the standard
+`tag`.  See their respective API docs for more information.
+
+Make it pretty
+==============
+
+The :mod:`html <kemmering.html>` package also as a 
+:func:`pretty <kemmering.html.pretty>` function that will render a snippet
+with line breaks and indentation, which can be useful for debugging.
+
+.. doctest:: pretty
+
+   >>> from kemmering import html as h
+   >>> print(h.pretty(
+   ...     h.doc(h.html()(
+   ...        h.head()(
+   ...            h.title()('Hello World!')
+   ...        ),
+   ...        h.body()(
+   ...            h.p()('Hello World!')
+   ...        )
+   ...     ))
+   ... ))
+   <!DOCTYPE html>
+   <html>
+     <head>
+       <title>Hello World!</title>
+     </head>
+     <body>
+       <p>Hello World!</p>
+     </body>
+   </html>
+   <BLANKLINE>
 
 Reserved Word Attributes
 ------------------------
@@ -132,17 +182,17 @@ trailing underscore will be elided from the ultimate attribute name.
 Templates
 =========
 
-Using `defer` and `bind` you can create and render templates.  `defer` allows 
-you to create an element that is realized at a later time with information not
-available when the snippet is being created.  `bind` is used to realize the
-snippet later.  `defer` accepts a single argument which is a function that is
-called at bind time.  The deferred function accepts a single argument, 
-`context`, which should contain any information needed to realize the snippet
-at bind time.  In theory, the `context` can be any object, but the standard set
-of template helpers provided all assume the context is a dictionary or an 
-object which provides a dictionary interface.  The deferred function returns
-either a tag instance or a string which replaces the deferred function in the
-bound snippet.
+Using :class:`defer <kemmering.defer>` and :class:`bind <kemmering.bind>` you
+can create and render templates.  `defer` allows you to create an element that
+is realized at a later time with information not available when the snippet is
+being created.  `bind` is used to realize the snippet later.  `defer` accepts a
+single argument which is a function that is called at bind time.  The deferred
+function accepts a single argument, `context`, which should contain any
+information needed to realize the snippet at bind time.  In theory, the
+`context` can be any object, but the standard set of template helpers provided
+all assume the context is a dictionary or an object which provides a dictionary
+interface.  The deferred function returns either a tag instance or a string
+which replaces the deferred function in the bound snippet.
 
 The signature of `defer` allows it to be used as a decorator, if you're into
 that kind of thing:
@@ -165,8 +215,8 @@ that kind of thing:
 `notag`
 -------
 
-`notag` is useful if you'd like for a deferred to provide more than one child
-at the level it is placed in the snippet:
+:class:`notag <kemmering.notag>` is useful if you'd like for a deferred to
+provide more than one child at the level it is placed in the snippet:
 
 .. doctest:: notag
 
@@ -216,16 +266,17 @@ snippet.
 Template Helpers
 ================
 
-The examples above which use `defer` are a bit contrived. In practice, it will
-probably be rare to use the general purpose `defer`, although it is general
-enough it should cover any use case.  The most common use cases for `defer` are
-covered by the helpers described below, which should cover the vast majority of
-cases for `defer`.  
+The examples above which use :class:`defer <kemmering.defer>` are a bit
+contrived. In practice, it will probably be rare to use the general purpose
+`defer`, although it is general enough it should cover any use case.  The most
+common use cases for `defer` are covered by the helpers described below, which
+should cover the vast majority of cases for `defer`.  
 
 `from_context`
 --------------
 
-`from_context` substitutes a value from the context:
+:class:`from_context <kemmering.from_context>` substitutes a value from the
+context:
 
 .. doctest:: from_context
 
@@ -253,9 +304,9 @@ cases for `defer`.
 `in_context`
 ------------
 
-`in_context` works very simlarly to `from_context` but accepts a sequence of 
-keys as an argument and can traverse a seris of nested dictionaries to 
-retrieve a value from the context:
+:class:`in_context <kemmering.in_context>` works very simlarly to `in_context`
+but accepts a sequence of keys as an argument and can traverse a seris of
+nested dictionaries to retrieve a value from the context:
 
 .. doctest:: in_context
 
@@ -283,8 +334,8 @@ retrieve a value from the context:
 `format_context`
 ----------------
 
-`format_context` is passed a format string, `s`, and returns the equivalent of
-`s.format(**context)` when it is bound:
+:class:`format_context <kemmering.format_context>` is passed a format string,
+`s`, and returns the equivalent of `s.format(**context)` when it is bound:
 
 .. doctest:: format_context
 
@@ -298,10 +349,10 @@ retrieve a value from the context:
 `cond`
 ------
 
-`cond` includes a sub-snippet or not conditionally.  The first argument is a
-function, `condition`, which accepts a single argument, `context`, and returns
-a boolean.  The second argument is the snippet to include if `condition` 
-returns `True`.
+:class:`cond <kemmering.cond>` includes a sub-snippet or not conditionally.
+The first argument is a function, `condition`, which accepts a single argument,
+`context`, and returns a boolean.  The second argument is the snippet to
+include if `condition` returns `True`.
 
 .. doctest:: cond
 
@@ -342,13 +393,13 @@ if `condition` returns `False`.
 `loop`
 ------
 
-`loop` allows for repeating of a sub-snippet inside of another snippet by 
-looping over items in a sequence.  The first argument to `loop` is the name of
-a key to maintain in the `context` with the value of the current item being
-iterated over.  The second argument is either a function, which accepts the 
-`context` as an argument and returns a sequence, or the name of a key inside
-of `context` whose value is the sequence to iterate over.  The third argument
-is the snippet to be repeated for each item in the sequence.
+:class:`loop <kemmering.loop>` allows for repeating of a sub-snippet inside of
+another snippet by looping over items in a sequence.  The first argument to
+`loop` is the name of a key to maintain in the `context` with the value of the
+current item being iterated over.  The second argument is either a function,
+which accepts the `context` as an argument and returns a sequence, or the name
+of a key inside of `context` whose value is the sequence to iterate over.  The
+third argument is the snippet to be repeated for each item in the sequence.
 
 .. doctest:: loop
 

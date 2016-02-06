@@ -9,7 +9,8 @@ class tag(object):
     """
     An XML tag.
 
-    `tag` is the name of the tag.  `attrs` are the attributes for tag.  The tag
+    `tag` is the name of the tag.  Add a trailing forward slash (`/`) character
+    to create a self-closing tag.  `attrs` are the attributes for tag.  The tag
     itself is callable.  Call the tag to add children.
 
     .. doctest:: api-tag
@@ -17,6 +18,8 @@ class tag(object):
        >>> from kemmering import tag
        >>> str(tag('a', b='c')('d'))
        '<a b="c">d</a>'
+       >>> str(tag('e/'))
+       '<e/>'
 
     """
     self_closing = False
