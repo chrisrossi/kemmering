@@ -39,8 +39,6 @@ Install using setuptools, e.g. (within a virtualenv)::
 
   $ $VENV/bin/pip install kemmering
 
-Sci-fi, not yet released.
-
 Tags
 ====
 
@@ -114,7 +112,7 @@ HTML Tags
 ---------
 
 The partial pattern is the basic strategy used by the vast majority of the
-:mod:`kemmering.html` package, which contains all valid HTML5 tags:
+:mod:`kemmering.html` package, which contains all valid HTML5 tags.
 
 .. doctest:: html
 
@@ -129,7 +127,7 @@ The partial pattern is the basic strategy used by the vast majority of the
    '<dl class="fruits"><dt>Pomegranate</dt><dd>It has <em>lots</em> of seeds!</dd><dt>Kiwi</dt><dd>It tastes like strawberry.</dd></dl>'
 
 Two tags, :class:`doc <kemmering.html.doc>` and 
-:class:`style <kemmering.html.style>` have different behavior from the standard
+:class:`style <kemmering.html.style>`, have different behavior from the standard
 `tag`.  See their respective API docs for more information.
 
 Make it pretty
@@ -148,7 +146,7 @@ with line breaks and indentation, which can be useful for debugging.
    ...            h.title()('Hello World!')
    ...        ),
    ...        h.body()(
-   ...            h.p()('Hello World!')
+   ...            h.p(class_='salutation')('Hello World!')
    ...        )
    ...     ))
    ... ))
@@ -158,7 +156,7 @@ with line breaks and indentation, which can be useful for debugging.
        <title>Hello World!</title>
      </head>
      <body>
-       <p>Hello World!</p>
+       <p class="salutation">Hello World!</p>
      </body>
    </html>
    <BLANKLINE>
@@ -167,17 +165,17 @@ Reserved Word Attributes
 ------------------------
 
 You might have noticed in the example above that the `class` attribute for the 
-`<dl>` element is specified using `class_`.  Because `class` is a reserved word
-in Python, you wouldn't be able to say `h.dl(class='fruits')`.  For this 
+`<p>` element is specified using `class_`.  Because `class` is a reserved word
+in Python, you wouldn't be able to say `h.p(class='salutation')`.  For this 
 reason, any attribute name can end with an underscore character, and the 
 trailing underscore will be elided from the ultimate attribute name.
 
 .. doctest:: reserved-words
 
    >>> from kemmering import html as h
-   >>> snippet = h.label(for_='#full_name')('Your full legal name')
+   >>> snippet = h.label(for_='full_name')('Your full legal name')
    >>> str(snippet)
-   '<label for="#full_name">Your full legal name</label>'
+   '<label for="full_name">Your full legal name</label>'
 
 Templates
 =========
@@ -193,9 +191,9 @@ single argument which is a function that is called at bind time.  The deferred
 function accepts a single argument, `context`, which should contain any
 information needed to realize the snippet at bind time.  In theory, the
 `context` can be any object, but the standard set of template helpers provided
-all assume the context is a dictionary or an object which provides a dictionary
-interface.  The deferred function returns either a tag instance or a string
-which replaces the deferred function in the bound snippet.
+mostly assume the context is a dictionary or an object which provides a
+dictionary interface.  The deferred function returns either a tag instance or a
+string which replaces the deferred function in the bound snippet.
 
 The signature of `defer` allows it to be used as a decorator, if you're into
 that kind of thing:
@@ -307,9 +305,9 @@ context:
 `in_context`
 ------------
 
-:class:`in_context <kemmering.in_context>` works very simlarly to `in_context`
-but accepts a sequence of keys as an argument and can traverse a seris of
-nested dictionaries to retrieve a value from the context:
+:class:`in_context <kemmering.in_context>` works very simlarly to
+`from_context` but accepts a sequence of keys as an argument and can traverse a
+seris of nested dictionaries to retrieve a value from the context:
 
 .. doctest:: in_context
 

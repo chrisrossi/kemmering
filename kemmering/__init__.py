@@ -148,9 +148,8 @@ def bind(template, context):
 
     `template` is a `tag` instance which should contain some instances of
     `defer` in its structure.  `context` is the context object that is passed
-    to deferred functions in the template.  Template helpers such as
-    `from_context`, `in_context`, and `format_context` assume the context is a
-    dictionary.
+    to deferred functions in the template.  Most template helpers assume the
+    context is a dictionary.
 
     Returns new `tag` instance that is a copy of the template with any
     deferred elements replaced by the return values of their deferred
@@ -178,9 +177,8 @@ class defer(object):
            "Return a `tag`, `notag`, or string."
 
     The function will be called at realization time when `bind` is called on
-    the containing snippet and passed the context object.  Template helpers
-    such as `from_context`, `in_context`, and `format_context` assume the
-    context is a dictionary.
+    the containing snippet and passed the context object.  Most template
+    helpers assume the context is a dictionary.
 
     Instances of `defer` may be used as children of `tag` objects or as values
     of tag atrributes.  When used as a child of a tag, the return value should
