@@ -1,4 +1,6 @@
 import sys
+from xml.sax.saxutils import escape
+
 
 PY2 = sys.version_info[0] == 2
 strbase = basestring if PY2 else str  # nopep8
@@ -139,7 +141,7 @@ _nothing = notag()
 class text(strclass):
 
     def _stream(self):
-        yield self
+        yield escape(self)
 
 
 def bind(template, context):

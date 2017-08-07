@@ -30,6 +30,12 @@ def test_tag_with_text():
     assert STR(tag('hello')('world')) == '<hello>world</hello>'
 
 
+def test_tag_with_text_escape():
+    from kemmering import tag
+    assert STR(tag('hello')('kith & kin > 0')) == (
+        '<hello>kith &amp; kin &gt; 0</hello>')
+
+
 def test_tag_with_text_non_ascii():
     from kemmering import tag
     assert STR(tag('hello')(u'w\u03bfrld')) == u'<hello>w\u03bfrld</hello>'
