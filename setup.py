@@ -2,7 +2,7 @@ import os, sys
 from setuptools import setup
 from setuptools import find_packages
 
-VERSION = '1.0'
+VERSION = '1.0.1'
 
 requires = []
 tests_require = requires + ['pytest']
