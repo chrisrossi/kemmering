@@ -46,6 +46,22 @@ def test_tag_with_text_repr():
     assert REPR(tag('hello')('world')) == "tag('hello')('world')"
 
 
+def test_cdata():
+    from kemmering import cdata
+    assert STR(cdata('some data')) == '<![CDATA[some data]]>'
+
+
+def test_nested_cdata():
+    from kemmering import cdata, tag
+    assert STR(tag('hello')(cdata('some data'))) == (
+        '<hello><![CDATA[some data]]></hello>')
+
+
+def test_cdata_repr():
+    from kemmering import cdata
+    assert REPR(cdata('some data')) == "cdata('some data')"
+
+
 def test_nested_tags():
     from kemmering import tag
     assert STR(tag('a')(tag('b/'))) == '<a><b/></a>'

@@ -41,7 +41,7 @@ class tag(object):
 
     def _extend(self, *children):
         def mkchild(x):
-            if isinstance(x, strbase):
+            if isinstance(x, strbase) and not isinstance(x, text):
                 x = text(x)
             x.parent = self
             return x
@@ -142,6 +142,26 @@ class text(strclass):
 
     def _stream(self):
         yield escape(self)
+
+
+class cdata(text):
+
+    def _stream(self):
+        yield '<![CDATA['
+        yield self
+        yield ']]>'
+
+    def __str__(self):
+        return ''.join(self._stream())
+
+    def __unicode__(self):
+        return ''.join(self._stream())
+
+    def __repr__(self):
+        return '{}({})'.format(
+            type(self).__name__,
+            super(cdata, self).__repr__(),
+        )
 
 
 def bind(template, context):
